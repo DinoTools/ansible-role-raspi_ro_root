@@ -1,0 +1,19 @@
+galaxy_info:
+  author: PhiBo
+  description: Mount the root filesystem of an Raspberry PI read-only
+  company: DinoTools
+
+  license: MIT
+
+  min_ansible_version: 1.2
+
+  platforms:
+  - name: Debian
+    versions:
+    - jessie
+
+  galaxy_tags:
+  - RaspberryPI
+  - system
+
+dependencies: []

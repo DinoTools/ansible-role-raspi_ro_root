@@ -1,0 +1,48 @@
+---
+- name: Copy required files
+  copy:
+    src: "{{ item }}"
+    dest: "/{{ item }}"
+    owner: root
+    group: root
+    mode: u=rx,g=rx,o=r
+  with_items:
+  - sbin/init-overlay
+  - sbin/overlayctl
+
+- name: Create overlay directory
+  file:
+    path: /overlay
+    owner: root
+    group: root
+    state: directory
+
+- name: Install overlay init
+  shell: "grep '/sbin/init-overlay' /boot/cmdline.txt || overlayctl install"
+
+- name: Get status
+  stat:
+    path: /overlay/robase/overlay
+  register: _raspi_ro_root_state_result
+
+- name: Enable read-only root
+  command: overlayctl enable
+  register: _raspi_ro_root_enable_state
+  when: "not _raspi_ro_root_state_result.stat.exists and raspi_ro_root_enabled"
+
+- name: Disable read-only root
+  command: overlayctl enable
+  register: _raspi_ro_root_disable_state
+  when: "_raspi_ro_root_state_result.stat.exists and not raspi_ro_root_enabled"
+
+- name: Restart machine
+  shell: sleep 2 && shutdown -r now "/boot/config.txt config changed"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: "raspi_ro_root_state_change_reboot and (_raspi_ro_root_enable_state.changed or _raspi_ro_root_disable_state.changed)"
+
+- name: Waiting for machine to come back
+  local_action: "wait_for port=22 host={{ inventory_hostname }} delay=20 timeout=120"
+  become: false
+  when: "raspi_ro_root_state_change_reboot and (_raspi_ro_root_enable_state.changed or _raspi_ro_root_disable_state.changed)"

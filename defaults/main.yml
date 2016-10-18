@@ -1,0 +1,3 @@
+---
+raspi_ro_root_enabled: yes
+raspi_ro_root_state_change_reboot: yes
