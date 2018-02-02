@@ -31,7 +31,7 @@
   when: "not _raspi_ro_root_state_result.stat.exists and raspi_ro_root_enabled"
 
 - name: Disable read-only root
-  command: overlayctl enable
+  command: overlayctl disable
   register: _raspi_ro_root_disable_state
   when: "_raspi_ro_root_state_result.stat.exists and not raspi_ro_root_enabled"
 
